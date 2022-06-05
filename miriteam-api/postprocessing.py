@@ -1,3 +1,4 @@
+from operator import le
 import numpy
 from sklearn.cluster import KMeans
 import matplotlib.pyplot as plt
@@ -8,6 +9,8 @@ import pandas as pd
 from datetime import datetime
 import matplotlib.pyplot as plt
 from meteostat import Point, Daily
+# from insert_data import get_pred
+from show_pred import get_pred
 
 def save_file(data):
     with open('result2.json', 'w', encoding='utf-8') as file:
@@ -15,10 +18,10 @@ def save_file(data):
 
 
 
-def getWether():
+def getWether(start, end):
     # Set time period
-    start = datetime(2020, 1, 1)
-    end = datetime(2022, 5, 24)
+    # start = datetime(2020, 1, 1)
+    # end = datetime(2022, 5, 24)
 
     # Create Point for Vancouver, BC
     location = Point(56.3287, 44.002)
@@ -26,25 +29,26 @@ def getWether():
     # Get daily data for 2018
     data = Daily(location, start, end)
     data = data.fetch()
-    result = {
+    resp = []
+    c = 0
+    # print(data.index[0].to_pydatetime())
+    for i in data.index:
+        result = {
         'date': None,
         'tavg': None,
         'wspd': None,
         'pres': None,
-    }
-    resp = []
-    c = 0
-    print(data.index[0].to_pydatetime())
-    for i in data.index:
+        }
         result['date'] = data.index[c].to_pydatetime()
-        result['date'] = result['date'].strftime('%m.%d.%Y')
+        result['date'] = result['date'].strftime('%d.%m.%Y')
         result['tavg'] = data['tavg'][c]
         result['wspd'] = data['wspd'][c]
         result['pres'] = data['pres'][c]
         resp.append(result)
         print(result)
         c = c + 1
-    totxt(resp)
+    # print(resp)
+    return resp
 
 def totxt(data):
     with open ('toKirill.txt', 'w', encoding='utf-8') as file:
@@ -81,10 +85,51 @@ def load_geopos():
         except:
             pass
         record['travel time'] = 86400 * (i['arrival'] - i['accepted'])
-        result.append(record['geopos'])
+        if record['geopos'] != None:
+            result.append(record['geopos'])
     
     save_file(result)
+
+def getNeyr(path):
+    with open(f'{path}/result.json', 'r', encoding='utf-8') as file:
+        data = json.load(file)
+    
+    for i in range(1, len(data)):
+        if data[i]['date'] == '':
+            data[i]['date'] = data[i - 1]['date']
+        if data[i]['date'] < data[i - 1]['date']:
+            for j in range (0, i):
+                if data[i]['date'] == data[j]['date']:
+                    data.insert(j, data[i])
+                    data.pop(i + 1)
+                    break
+    
+    res = {}
+
+    for record in data:
+        keys = record['date'].split('.|,')
+        for key in keys:
+            if key in res:
+                res[key] += 1
+            else:
+                res |= {key: 1}
+    
+    newmas = []
+    c = 0
+    for i in res:
+        if c >= 30:
+            break
+        newmas.append(res[i])
+        c = c + 1
+    while (len(newmas) < 30):
+        newmas.append(0) 
+
+    # gp(newmas, 5)
+    data = get_pred(newmas, 10)
+    
+    return data
+    
         
 
 if __name__ == '__main__':
-    load_geopos()
+    getNeyr()

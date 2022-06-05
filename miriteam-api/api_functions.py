@@ -2,18 +2,39 @@ from counter import word_counter, station_counter, loads
 from api_func import *
 from api_functional import load_file
 import json
+from postprocessing import getWether, getNeyr
+from datetime import datetime
 
 def process_file(path, filename):
     load_file(path, filename)
+
+def getStartEndDate(path, filename):
+    result = {
+        'min date': None,
+        'max date:': None
+    }
+
+    with open(f'{path}/result.json', 'r', encoding='utf-8') as file:
+        data = json.load(file)
+    result['min date'] = datetime.strptime(data[0]['date'], '%d.%m.%Y')
+    result['max date'] = datetime.strptime(data[len(data)-1]['date'], '%d.%m.%Y')
+    return result
+
 
 def get_data(path, filename):
     data = {}
 
     rating = word_counter(path)
-    
+
+    date = getStartEndDate(path, filename)
+    data['weather'] = getWether(date['min date'], date['max date'])
+
+    data['neyronka'] = list( getNeyr(path))
+
     # sorted(rating) 
     # рейтинг причин вызова
     data['rejting prichin vyzova'] = rating 
+
 
     # количество ложных вызовов
     data['kolichestvo lozhnyh vyzovov'] = 0
@@ -71,5 +92,5 @@ def get_data(path, filename):
     #         json.dump(data, ofile, ensure_ascii=False, indent=4)
 
 if __name__ == '__main__':
-    process_file('1', 'Журнал активных вызовов 01-2020.xls')
-    get_data('1', 'Журнал активных вызовов 01-2020.xls')
+    process_file('127.0.0.1', '01-2020.xls')
+    print(get_data('127.0.0.1', '01-2020.xls'))

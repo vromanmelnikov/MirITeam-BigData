@@ -64,7 +64,7 @@ def load(pyth_with_filename):
             if record['twice'] == 'Первичный':
                 record['twice'] = 0
             else:
-                record['type'] = 1
+                record['twice'] = 1
             record['type'] = row[18]
 
             if record['type'] == 'неотложное состояние':
@@ -73,6 +73,8 @@ def load(pyth_with_filename):
                 record['type'] = 0
         elif (line == 4):
             record['diagnose'] = row[1]
+            if record['diagnose'] == '':
+                record['diagnose'] = 'Диагноза нет'
             record['result'] = row[11]
         elif (line == 5):
             record['delivered'] = row[1]
