@@ -1,0 +1,16 @@
+MANIFEST.in
+README.md
+setup.cfg
+setup.py
+flack/__init__.py
+flack/exceptions.py
+flack/message.py
+flack/oauth.py
+flack/utils.py
+flack.egg-info/PKG-INFO
+flack.egg-info/SOURCES.txt
+flack.egg-info/dependency_links.txt
+flack.egg-info/not-zip-safe
+flack.egg-info/requires.txt
+flack.egg-info/top_level.txt
+flack/templates/oauth_button.tpl
